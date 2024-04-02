@@ -1,7 +1,13 @@
-import type { Config } from "jest";
+import nextJest from "next/jest";
+import dotenv from "dotenv";
 
-export default async (): Promise<Config> => {
-  return {
-    verbose: true,
-  };
-};
+dotenv.config({ path: ".env.development" });
+
+const createJestConfig = nextJest({
+  dir: ".",
+});
+const jestconfig = createJestConfig({
+  moduleDirectories: ["node_modules", "<rootDir>"],
+});
+
+export default jestconfig;
