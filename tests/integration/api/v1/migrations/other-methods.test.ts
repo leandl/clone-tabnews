@@ -1,3 +1,9 @@
+import orchestrator from "tests/orchestrator";
+
+beforeAll(async () => {
+  await orchestrator.waitForAllServices();
+});
+
 const allMethodForTest = ["HEAD", "PUT", "DELETE", "OPTIONS", "PATCH"] as const;
 type Method = (typeof allMethodForTest)[number];
 
