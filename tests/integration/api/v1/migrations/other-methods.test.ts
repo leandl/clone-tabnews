@@ -20,7 +20,7 @@ async function getDataBaseStatus() {
 }
 
 test("OTHER HTTP METHODS to /api/v1/migrations should not let opened connections in database", async () => {
-  for (let method of allMethodForTest) {
+  for (const method of allMethodForTest) {
     const migrationsResponse = await getMigrationsResponse(method);
     expect(migrationsResponse.status).toBe(405);
 
