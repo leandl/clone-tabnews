@@ -31,6 +31,8 @@
     "ts-node": "^10.9.1"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
     "@types/async-retry": "^1.4.8",
     "@types/jest": "^29.5.4",
     "@types/node": "^20.4.3",
