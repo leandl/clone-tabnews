@@ -3,7 +3,7 @@ import database from "@/infra/database";
 
 export default async function status(
   request: NextApiRequest,
-  response: NextApiResponse
+  response: NextApiResponse,
 ) {
   const updatedAt = new Date().toISOString();
 
@@ -11,7 +11,7 @@ export default async function status(
   const databaseVersionValue = databaseVersionResult.rows[0].server_version;
 
   const databaseMaxConnectionsResult = await database.query(
-    "SHOW max_connections;"
+    "SHOW max_connections;",
   );
   const databaseMaxConnectionsValue =
     databaseMaxConnectionsResult.rows[0].max_connections;

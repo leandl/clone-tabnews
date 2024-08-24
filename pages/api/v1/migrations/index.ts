@@ -7,7 +7,7 @@ import { Client as DBCLient } from "pg";
 
 function getMigrationOptions(
   dbClient: DBCLient,
-  inLiveRun: boolean
+  inLiveRun: boolean,
 ): RunnerOption {
   return {
     dbClient,
@@ -21,7 +21,7 @@ function getMigrationOptions(
 
 export default async function migrations(
   request: NextApiRequest,
-  response: NextApiResponse
+  response: NextApiResponse,
 ) {
   const allowedMethods = ["GET", "POST"];
   if (!allowedMethods.includes(request.method!)) {
@@ -37,7 +37,7 @@ export default async function migrations(
     const inLiveRun = request.method === "POST";
     const migrationOptions: RunnerOption = getMigrationOptions(
       dbClient,
-      inLiveRun
+      inLiveRun,
     );
 
     if (request.method === "GET") {
