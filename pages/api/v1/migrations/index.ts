@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import { resolve } from "node:path";
 import migrationRunner, { RunnerOption } from "node-pg-migrate";
 
 import { NextApiRequest, NextApiResponse } from "next";
@@ -12,7 +12,7 @@ function getMigrationOptions(
   return {
     dbClient,
     dryRun: !inLiveRun,
-    dir: join("infra", "migrations"),
+    dir: resolve("infra", "migrations"),
     direction: "up",
     migrationsTable: "pgmigrations",
     verbose: true,
