@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import { resolve } from "node:path";
 import migrationRunner, { RunnerOption } from "node-pg-migrate";
 
 import { NextApiRequest, NextApiResponse } from "next";
@@ -7,12 +7,12 @@ import { Client as DBCLient } from "pg";
 
 function getMigrationOptions(
   dbClient: DBCLient,
-  inLiveRun: boolean
+  inLiveRun: boolean,
 ): RunnerOption {
   return {
     dbClient,
     dryRun: !inLiveRun,
-    dir: join("infra", "migrations"),
+    dir: resolve("infra", "migrations"),
     direction: "up",
     migrationsTable: "pgmigrations",
     verbose: true,
@@ -21,7 +21,7 @@ function getMigrationOptions(
 
 export default async function migrations(
   request: NextApiRequest,
-  response: NextApiResponse
+  response: NextApiResponse,
 ) {
   const allowedMethods = ["GET", "POST"];
   if (!allowedMethods.includes(request.method!)) {
@@ -37,7 +37,7 @@ export default async function migrations(
     const inLiveRun = request.method === "POST";
     const migrationOptions: RunnerOption = getMigrationOptions(
       dbClient,
-      inLiveRun
+      inLiveRun,
     );
 
     if (request.method === "GET") {
