@@ -1,8 +1,9 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import database from "@/infra/database";
+import { APIStatusResponse } from "@/types/pages/api/v1/status";
 
 export default async function status(
-  request: NextApiRequest,
+  _request: NextApiRequest,
   response: NextApiResponse,
 ) {
   const updatedAt = new Date().toISOString();
@@ -24,7 +25,7 @@ export default async function status(
   const databaseOpenedConnectionsValue =
     databaseOpenedConnectionsResult.rows[0].opened_connections;
 
-  return response.status(200).json({
+  const responseBody: APIStatusResponse = {
     updated_at: updatedAt,
     dependencies: {
       database: {
@@ -33,5 +34,7 @@ export default async function status(
         opened_connections: databaseOpenedConnectionsValue,
       },
     },
-  });
+  };
+
+  return response.status(200).json(responseBody);
 }
