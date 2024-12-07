@@ -1,3 +1,4 @@
+import { APIStatusResponse } from "@/types/pages/api/v1/status";
 import orchestrator from "tests/orchestrator";
 
 beforeAll(async () => {
@@ -9,10 +10,12 @@ describe("GET /api/v1/status", () => {
       const response = await fetch("http://localhost:3000/api/v1/status");
       expect(response.status).toBe(200);
 
-      const responseBody = await response.json();
+      const responseBody = (await response.json()) as APIStatusResponse;
       expect(responseBody.updated_at).toBeDefined();
 
-      const parsedUpdatedAt = new Date(responseBody.updated_at).toISOString();
+      const parsedUpdatedAt = new Date(
+        responseBody.updated_at?.toString(),
+      ).toISOString();
       expect(responseBody.updated_at).toEqual(parsedUpdatedAt);
 
       expect(responseBody.dependencies.database).toBeDefined();
