@@ -1,4 +1,5 @@
 import { APIStatusResponse } from "@/types/pages/api/v1/status";
+import { ReactNode } from "react";
 import useSWR from "swr";
 
 async function fetchAPI(key: string) {
@@ -13,6 +14,7 @@ export default function StatusPage() {
     <>
       <h1>Status</h1>
       <UpdatedAt />
+      <DatabaseStatus />
     </>
   );
 }
@@ -36,24 +38,42 @@ function UpdatedAt() {
   return (
     <div>
       Última atualização: <b>{updatedAtText}</b>
-      {data?.dependencies.database && (
-        <div>
-          <h2>Database</h2>
-          <ul>
-            <li>
-              Versão: <b>{data.dependencies.database.version}</b>
-            </li>
-            <li>
-              Máximo de conexões:{" "}
-              <b>{data.dependencies.database.max_connections}</b>
-            </li>
-            <li>
-              Conexções abertas:{" "}
-              <b>{data.dependencies.database.opened_connections}</b>
-            </li>
-          </ul>
-        </div>
-      )}
+    </div>
+  );
+}
+
+function DatabaseStatus() {
+  const { isLoading, data } = useSWR<APIStatusResponse>(
+    "/api/v1/status",
+    fetchAPI,
+    {
+      refreshInterval: 2000,
+    },
+  );
+
+  let databaseStatusInformation: ReactNode = "Carregando...";
+  if (!isLoading && data) {
+    databaseStatusInformation = (
+      <ul>
+        <li>
+          Versão: <b>{data.dependencies.database.version}</b>
+        </li>
+        <li>
+          Máximo de conexões:{" "}
+          <b>{data.dependencies.database.max_connections}</b>
+        </li>
+        <li>
+          Conexções abertas:{" "}
+          <b>{data.dependencies.database.opened_connections}</b>
+        </li>
+      </ul>
+    );
+  }
+
+  return (
+    <div>
+      <h2>Database</h2>
+      <div>{databaseStatusInformation}</div>
     </div>
   );
 }
