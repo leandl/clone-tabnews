@@ -1,4 +1,3 @@
-import { APIStatusResponse } from "@/types/pages/api/v1/status";
 import orchestrator from "tests/orchestrator";
 
 beforeAll(async () => {
