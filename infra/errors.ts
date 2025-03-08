@@ -1,6 +1,6 @@
 type InternalServerErrorOptions = {
   statusCode?: number;
-  cause: unknown;
+  cause?: unknown;
 };
 
 export class InternalServerError extends Error {
@@ -28,7 +28,7 @@ export class InternalServerError extends Error {
 
 type ServiceErrorOptions = {
   message?: string;
-  cause: unknown;
+  cause?: unknown;
 };
 
 export class ServiceError extends Error {
@@ -41,6 +41,35 @@ export class ServiceError extends Error {
     });
 
     this.name = "ServiceError";
+  }
+
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      action: this.action,
+      status_code: this.statusCode,
+    };
+  }
+}
+
+type ValidationErrorOptions = {
+  message?: string;
+  action?: string;
+  cause?: unknown;
+};
+
+export class ValidationError extends Error {
+  public readonly statusCode = 400;
+  public action: string;
+
+  constructor({ cause, message, action }: ValidationErrorOptions) {
+    super(message ?? "Um erro de validação ocorreu.", {
+      cause,
+    });
+
+    this.action = action ?? "Ajuste os dados enviados e tente novamente.";
+    this.name = "ValidationError";
   }
 
   toJSON() {
