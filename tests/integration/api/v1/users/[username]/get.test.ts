@@ -92,23 +92,23 @@ describe("GET /api/v1/users/[username]", () => {
       expect(Date.parse(response2Body.created_at)).not.toBeNaN();
       expect(Date.parse(response2Body.updated_at)).not.toBeNaN();
     });
-  });
 
-  test("With nonexistent username", async () => {
-    const NONEXISTENT_USERNAME = "UsuarioInexistente";
+    test("With nonexistent username", async () => {
+      const NONEXISTENT_USERNAME = "UsuarioInexistente";
 
-    const response = await fetch(
-      `http://localhost:3000/api/v1/users/${NONEXISTENT_USERNAME}`,
-    );
+      const response = await fetch(
+        `http://localhost:3000/api/v1/users/${NONEXISTENT_USERNAME}`,
+      );
 
-    expect(response.status).toBe(404);
+      expect(response.status).toBe(404);
 
-    const responseBody = await response.json();
-    expect(responseBody).toEqual({
-      name: "NotFoundError",
-      message: "O username informado não foi encontrado no sistema.",
-      action: "Verifique se o username está digitado corretamente.",
-      status_code: 404,
+      const responseBody = await response.json();
+      expect(responseBody).toEqual({
+        name: "NotFoundError",
+        message: "O username informado não foi encontrado no sistema.",
+        action: "Verifique se o username está digitado corretamente.",
+        status_code: 404,
+      });
     });
   });
 });
