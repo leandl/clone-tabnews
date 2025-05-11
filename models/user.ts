@@ -82,13 +82,22 @@ async function findOneByUsername(username: string) {
   }
 }
 
-type UserCreateDTO = {
+type User = {
+  id: string;
+  username: string;
+  email: string;
+  password: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type UserCreateDTO = {
   username: string;
   email: string;
   password: string;
 };
 
-async function create(userInputValues: UserCreateDTO) {
+async function create(userInputValues: UserCreateDTO): Promise<User> {
   await validateUniqueUsername(userInputValues.username);
   await validateUniqueEmail(userInputValues.email);
   await hashPasswordInObject(userInputValues);
@@ -123,16 +132,10 @@ type UserUpdateDTO = {
   password?: string;
 };
 
-type User = {
-  id: string;
-  username: string;
-  email: string;
-  password: string;
-  created_at: string;
-  updated_at: string;
-};
-
-async function update(username: string, userInputValues: UserUpdateDTO) {
+async function update(
+  username: string,
+  userInputValues: UserUpdateDTO,
+): Promise<User> {
   const currentUser = await findOneByUsername(username);
 
   if (typeof userInputValues.username === "string") {
