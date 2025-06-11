@@ -82,6 +82,35 @@ export class ValidationError extends Error {
   }
 }
 
+type UnauthorizedErrorOptions = {
+  message?: string;
+  action?: string;
+  cause?: unknown;
+};
+
+export class UnauthorizedError extends Error {
+  public readonly statusCode = 401;
+  public action: string;
+
+  constructor({ cause, message, action }: UnauthorizedErrorOptions) {
+    super(message ?? "Usuário não autenticado.", {
+      cause,
+    });
+
+    this.action = action ?? "Faça novamente o login para continuar.";
+    this.name = "UnauthorizedError";
+  }
+
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      action: this.action,
+      status_code: this.statusCode,
+    };
+  }
+}
+
 type NotFoundErrorOptions = {
   message?: string;
   action?: string;
