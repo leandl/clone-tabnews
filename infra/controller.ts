@@ -3,9 +3,10 @@ import {
   InternalServerError,
   MethodNotAllowedError,
   NotFoundError,
+  UnauthorizedError,
   ValidationError,
 } from "./errors";
-import { isErrorWithStatusCode } from "./utils";
+// import { isErrorWithStatusCode } from "./utils";
 
 function onNoMatchHandler(_request: NextApiRequest, response: NextApiResponse) {
   const publicErrorObject = new MethodNotAllowedError();
@@ -17,17 +18,20 @@ function onErrorHandler(
   _request: NextApiRequest,
   response: NextApiResponse,
 ) {
-  if (error instanceof ValidationError || error instanceof NotFoundError) {
+  if (
+    error instanceof ValidationError ||
+    error instanceof NotFoundError ||
+    error instanceof UnauthorizedError
+  ) {
     return response.status(error.statusCode).json(error);
   }
 
-  const statusCode = isErrorWithStatusCode(error)
-    ? error.statusCode
-    : undefined;
+  // const statusCode = isErrorWithStatusCode(error)
+  //   ? error.statusCode
+  //   : undefined;
 
   const publicErrorObject = new InternalServerError({
     cause: error,
-    statusCode: statusCode,
   });
 
   console.error(publicErrorObject);
