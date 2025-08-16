@@ -111,13 +111,42 @@ async function findOneByEmail(email: string) {
   }
 }
 
+async function findOneById(id: string) {
+  return runSelectQuery(id);
+
+  async function runSelectQuery(id: string) {
+    const results = await database.query({
+      text: `
+      SELECT
+        *
+      FROM
+        users
+      WHERE
+        id = $1
+      LIMIT
+        1
+      ;`,
+      values: [id],
+    });
+
+    if (results.rowCount === 0) {
+      throw new NotFoundError({
+        message: "O id informado não foi encontrado no sistema.",
+        action: "Verifique se o id está digitado corretamente.",
+      });
+    }
+
+    return results.rows[0];
+  }
+}
+
 type User = {
   id: string;
   username: string;
   email: string;
   password: string;
-  created_at: string;
-  updated_at: string;
+  created_at: Date;
+  updated_at: Date;
 };
 
 export type UserCreateDTO = {
@@ -213,6 +242,7 @@ async function update(
 const user = {
   create,
   update,
+  findOneById,
   findOneByUsername,
   findOneByEmail,
 };

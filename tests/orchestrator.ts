@@ -4,6 +4,7 @@ import { faker } from "@faker-js/faker";
 import migrator from "models/migrator";
 import database from "infra/database";
 import user, { UserCreateDTO } from "models/user";
+import session from "@/models/session";
 
 async function waitForAllServices() {
   async function waitForWebServer() {
@@ -41,11 +42,21 @@ async function createUser(userObject?: Partial<UserCreateDTO>) {
   });
 }
 
+async function createSession(userId: string) {
+  return await session.create(userId);
+}
+
+async function createWithExpiration(userId: string, expiresInMs: number) {
+  return await session.createWithExpiration(userId, expiresInMs);
+}
+
 const orchestrator = {
   waitForAllServices,
   clearDatabase,
   runPendingMigrations,
   createUser,
+  createSession,
+  createWithExpiration,
 };
 
 export default orchestrator;
