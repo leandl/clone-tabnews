@@ -5,6 +5,9 @@ import migrator from "models/migrator";
 import database from "infra/database";
 import user, { UserCreateDTO } from "models/user";
 import session from "@/models/session";
+import { MailAddress, MailcatcherMessage } from "@/types/infra/email";
+
+const emailHttpUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
 
 async function waitForAllServices() {
   async function waitForWebServer() {
@@ -22,7 +25,24 @@ async function waitForAllServices() {
     });
   }
 
+  async function waitForEmailServer() {
+    return retry(fetchEmailPage, {
+      retries: 100,
+
+      maxTimeout: 1000,
+    });
+
+    async function fetchEmailPage() {
+      const response = await fetch(emailHttpUrl);
+
+      if (response.status !== 200) {
+        throw Error();
+      }
+    }
+  }
+
   await waitForWebServer();
+  await waitForEmailServer();
 }
 
 async function clearDatabase() {
@@ -50,6 +70,44 @@ async function createWithExpiration(userId: string, expiresInMs: number) {
   return await session.createWithExpiration(userId, expiresInMs);
 }
 
+async function deleteAllEmails() {
+  await fetch(`${emailHttpUrl}/messages`, {
+    method: "DELETE",
+  });
+}
+
+type EmailData = {
+  sender: MailAddress;
+  recipients: MailAddress[];
+  subject: string;
+  text: string;
+};
+
+async function getLastEmail(): Promise<EmailData | null> {
+  const emailListResponse = await fetch(`${emailHttpUrl}/messages`);
+
+  const emailListBody: MailcatcherMessage[] = await emailListResponse.json();
+  if (emailListBody.length === 0) {
+    return null;
+  }
+
+  const lastEmailItemIndex = emailListBody.length - 1;
+  const lastEmailItem = emailListBody[lastEmailItemIndex];
+
+  const emailTextResponse = await fetch(
+    `${emailHttpUrl}/messages/${lastEmailItem.id}.plain`,
+  );
+
+  const emailTextBody = await emailTextResponse.text();
+
+  return {
+    sender: lastEmailItem.sender,
+    recipients: lastEmailItem.recipients,
+    subject: lastEmailItem.subject,
+    text: emailTextBody,
+  };
+}
+
 const orchestrator = {
   waitForAllServices,
   clearDatabase,
@@ -57,6 +115,8 @@ const orchestrator = {
   createUser,
   createSession,
   createWithExpiration,
+  deleteAllEmails,
+  getLastEmail,
 };
 
 export default orchestrator;
