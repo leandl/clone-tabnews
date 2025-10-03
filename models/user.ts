@@ -44,6 +44,17 @@ async function validateUniqueEmail(email: string) {
   }
 }
 
+function injectDefaultFeaturesInObject(
+  userInputValues: UserCreateDTO,
+): UserCreateDTOWithFeatures {
+  const userInputValuesWithFeatures: UserCreateDTOWithFeatures = {
+    ...userInputValues,
+    features: ["read:activation_token"],
+  };
+
+  return userInputValuesWithFeatures;
+}
+
 type ChangePasswordDTO = {
   password: string;
 };
@@ -155,28 +166,38 @@ export type UserCreateDTO = {
   password: string;
 };
 
+type UserCreateDTOWithFeatures = UserCreateDTO & {
+  features: string[];
+};
+
 async function create(userInputValues: UserCreateDTO): Promise<User> {
   await validateUniqueUsername(userInputValues.username);
   await validateUniqueEmail(userInputValues.email);
   await hashPasswordInObject(userInputValues);
 
-  const newUser = await runInsertQuery(userInputValues);
+  const userInputValuesWithFeatures =
+    injectDefaultFeaturesInObject(userInputValues);
+
+  const newUser = await runInsertQuery(userInputValuesWithFeatures);
   return newUser;
 
-  async function runInsertQuery(userInputValues: UserCreateDTO) {
+  async function runInsertQuery(
+    userInputValuesWithFeatures: UserCreateDTOWithFeatures,
+  ) {
     const results = await database.query({
       text: `
       INSERT INTO 
-        users (username, email, password) 
+        users (username, email, password, features) 
       VALUES 
-        ($1, $2, $3)
+        ($1, $2, $3, $4)
       RETURNING
         *
       ;`,
       values: [
-        userInputValues.username,
-        userInputValues.email,
-        userInputValues.password,
+        userInputValuesWithFeatures.username,
+        userInputValuesWithFeatures.email,
+        userInputValuesWithFeatures.password,
+        userInputValuesWithFeatures.features,
       ],
     });
 
