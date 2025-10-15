@@ -151,7 +151,7 @@ async function findOneById(id: string) {
   }
 }
 
-type User = {
+export type User = {
   id: string;
   username: string;
   email: string;
