@@ -1,5 +1,5 @@
 import activation from "@/models/activation";
-import { User } from "@/models/user";
+import user, { User } from "@/models/user";
 import orchestrator from "tests/orchestrator";
 
 beforeAll(async () => {
@@ -11,6 +11,7 @@ beforeAll(async () => {
 
 describe("Use case: Registration Flow (all sucessful)", () => {
   let createUserResponseBody: User;
+  let activationTokenUUID: string;
   const USER_TEST = {
     username: "RegistrationFlow",
     email: "registration.flow@email.com",
@@ -55,16 +56,30 @@ describe("Use case: Registration Flow (all sucessful)", () => {
     expect(lastEmail?.subject).toBe("Ative seu cadastro no TabNews!");
     expect(lastEmail?.text).toContain(USER_TEST.username);
 
-    const activationTokenUUID = orchestrator.extractUUID(lastEmail?.text || "");
-    const activationToken = await activation.findOneValidById(
-      activationTokenUUID!,
-    );
+    activationTokenUUID = orchestrator.extractUUID(lastEmail?.text || "")!;
+    const activationToken =
+      await activation.findOneValidById(activationTokenUUID);
 
     expect(activationToken.user_id).toBe(createUserResponseBody.id);
     expect(activationToken.used_at).toBe(null);
   });
 
-  test("Activate account", async () => {});
+  test("Activate account", async () => {
+    const activationResponse = await fetch(
+      `http://localhost:3000/api/v1/activations/${activationTokenUUID}`,
+      {
+        method: "PATCH",
+      },
+    );
+
+    expect(activationResponse.status).toBe(200);
+    const activationResponseBody = await activationResponse.json();
+
+    expect(Date.parse(activationResponseBody.used_at)).not.toBeNaN();
+
+    const activatedUser = await user.findOneByUsername(USER_TEST.username);
+    expect(activatedUser.features).toEqual(["create:session"]);
+  });
   test("Login", async () => {});
   test("Get user information", async () => {});
 });

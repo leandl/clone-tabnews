@@ -64,7 +64,7 @@ async function hashPasswordInObject(input: ChangePasswordDTO) {
   input.password = hashedPassword;
 }
 
-async function findOneByUsername(username: string) {
+async function findOneByUsername(username: string): Promise<User> {
   return runSelectQuery(username);
 
   async function runSelectQuery(username: string) {
@@ -93,7 +93,7 @@ async function findOneByUsername(username: string) {
   }
 }
 
-async function findOneByEmail(email: string) {
+async function findOneByEmail(email: string): Promise<User> {
   return runSelectQuery(email);
 
   async function runSelectQuery(email: string) {
@@ -122,7 +122,7 @@ async function findOneByEmail(email: string) {
   }
 }
 
-async function findOneById(id: string) {
+async function findOneById(id: string): Promise<User> {
   return runSelectQuery(id);
 
   async function runSelectQuery(id: string) {
@@ -155,6 +155,7 @@ export type User = {
   id: string;
   username: string;
   email: string;
+  features: string[];
   password: string;
   created_at: Date;
   updated_at: Date;
@@ -260,12 +261,37 @@ async function update(
   }
 }
 
+async function setFeatures(userId: string, features: string[]): Promise<User> {
+  const updatedUser = runSetFeaturesQuery(userId, features);
+  return updatedUser;
+
+  async function runSetFeaturesQuery(userId: string, features: string[]) {
+    const results = await database.query({
+      text: `
+      UPDATE
+        users
+      SET
+        features = $2,
+        updated_at = timezone('utc', now())
+      WHERE
+        id = $1
+      RETURNING
+        *
+      ;`,
+      values: [userId, features],
+    });
+
+    return results.rows[0];
+  }
+}
+
 const user = {
   create,
   update,
   findOneById,
   findOneByUsername,
   findOneByEmail,
+  setFeatures,
 };
 
 export default user;

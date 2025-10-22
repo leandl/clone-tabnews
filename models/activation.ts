@@ -1,5 +1,5 @@
 import email from "@/infra/email";
-import { User } from "./user";
+import user, { User } from "./user";
 import database from "@/infra/database";
 import webserver from "@/infra/webserver";
 import { NotFoundError } from "@/infra/errors";
@@ -90,10 +90,42 @@ async function findOneValidById(token: string): Promise<UserActivationToken> {
   }
 }
 
+async function markTokenAsUsed(token: string): Promise<UserActivationToken> {
+  const activationToken = await runUpdateQuery(token);
+
+  return activationToken;
+
+  async function runUpdateQuery(token: string) {
+    const results = await database.query({
+      text: `
+      UPDATE
+        user_activation_tokens
+      SET
+        used_at = timezone('utc', now()),
+        updated_at = timezone('utc', now())
+      WHERE
+        id = $1
+      RETURNING
+        *
+      ;`,
+      values: [token],
+    });
+
+    return results.rows[0];
+  }
+}
+
+async function activateUserByUserId(userId: string) {
+  const activatedUser = user.setFeatures(userId, ["create:session"]);
+  return activatedUser;
+}
+
 const activation = {
   sendEmailToUser,
   create,
   findOneValidById,
+  markTokenAsUsed,
+  activateUserByUserId,
 };
 
 export default activation;
