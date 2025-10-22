@@ -50,16 +50,18 @@ describe("Use case: Registration Flow (all sucessful)", () => {
   test("Receive activation email", async () => {
     const lastEmail = await orchestrator.getLastEmail();
 
-    const activationToken = await activation.findOneByUserId(
-      createUserResponseBody.id,
-    );
-
     expect(lastEmail?.sender).toBe("<contato@tabnews.leandl.com.br>");
     expect(lastEmail?.recipients[0]).toBe(`<${USER_TEST.email}>`);
     expect(lastEmail?.subject).toBe("Ative seu cadastro no TabNews!");
-
     expect(lastEmail?.text).toContain(USER_TEST.username);
-    expect(lastEmail?.text).toContain(activationToken.id);
+
+    const activationTokenUUID = orchestrator.extractUUID(lastEmail?.text || "");
+    const activationToken = await activation.findOneValidById(
+      activationTokenUUID!,
+    );
+
+    expect(activationToken.user_id).toBe(createUserResponseBody.id);
+    expect(activationToken.used_at).toBe(null);
   });
 
   test("Activate account", async () => {});
