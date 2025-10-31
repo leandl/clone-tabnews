@@ -4,15 +4,20 @@ import { createRouter } from "next-connect";
 import controller from "@/infra/controller";
 import authentication from "@/models/authentication";
 import session from "@/models/session";
+import { NextApiRequestWithContext } from "@/types/infra/next";
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
-router.post(postHandler);
+router.use(controller.injectAnonymousOrUser);
+router.post(controller.canRequest("create:session"), postHandler);
 router.delete(deleteHandler);
 
 export default router.handler(controller.errorHandlers);
 
-async function postHandler(request: NextApiRequest, response: NextApiResponse) {
+async function postHandler(
+  request: NextApiRequestWithContext,
+  response: NextApiResponse,
+) {
   const userInputValues = request.body;
 
   const authenticateUser = await authentication.getAuthenticatedUser(

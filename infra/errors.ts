@@ -111,6 +111,36 @@ export class UnauthorizedError extends Error {
   }
 }
 
+type ForbiddenErrorOptions = {
+  message?: string;
+  action?: string;
+  cause?: unknown;
+};
+
+export class ForbiddenError extends Error {
+  public readonly statusCode = 403;
+  public action: string;
+
+  constructor({ cause, message, action }: ForbiddenErrorOptions) {
+    super(message ?? "Acesso negado..", {
+      cause,
+    });
+
+    this.action =
+      action ?? "Verifique as features necessárias antes de continuar.";
+    this.name = "ForbiddenError";
+  }
+
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      action: this.action,
+      status_code: this.statusCode,
+    };
+  }
+}
+
 type NotFoundErrorOptions = {
   message?: string;
   action?: string;
