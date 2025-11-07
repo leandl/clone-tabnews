@@ -5,6 +5,8 @@ import controller from "@/infra/controller";
 import authentication from "@/models/authentication";
 import session from "@/models/session";
 import { NextApiRequestWithContext } from "@/types/infra/next";
+import authorization from "@/models/authorization";
+import { ForbiddenError } from "@/infra/errors";
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
@@ -24,6 +26,13 @@ async function postHandler(
     userInputValues.email,
     userInputValues.password,
   );
+
+  if (!authorization.can(authenticateUser, "create:session")) {
+    throw new ForbiddenError({
+      message: "Você não possui permissão para fazer login.",
+      action: "Contate o suporte caso você acredite que isto seja um erro.",
+    });
+  }
 
   const newSession = await session.create(authenticateUser.id);
   controller.setSessionCookie(response, newSession.token);

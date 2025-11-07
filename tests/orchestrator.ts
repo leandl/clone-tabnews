@@ -3,9 +3,10 @@ import { faker } from "@faker-js/faker";
 
 import migrator from "models/migrator";
 import database from "infra/database";
-import user, { UserCreateDTO } from "models/user";
+import user, { User, UserCreateDTO } from "models/user";
 import session from "@/models/session";
 import { MailAddress, MailcatcherMessage } from "@/types/infra/email";
+import activation from "@/models/activation";
 
 const emailHttpUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
 
@@ -60,6 +61,10 @@ async function createUser(userObject?: Partial<UserCreateDTO>) {
     email: userObject?.email ?? faker.internet.email(),
     password: userObject?.password ?? "validPassword",
   });
+}
+
+async function activateUser(user: User) {
+  await activation.activateUserByUserId(user.id);
 }
 
 async function createSession(userId: string) {
@@ -118,6 +123,7 @@ const orchestrator = {
   clearDatabase,
   runPendingMigrations,
   createUser,
+  activateUser,
   createSession,
   createWithExpiration,
   deleteAllEmails,

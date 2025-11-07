@@ -11,6 +11,7 @@ import {
 import session from "@/models/session";
 import user from "@/models/user";
 import { NextApiRequestWithContext } from "@/types/infra/next";
+import authorization, { UserWithFeatures } from "@/models/authorization";
 
 // import { isErrorWithStatusCode } from "./utils";
 
@@ -112,10 +113,6 @@ async function injectAnonymousOrUser(
   return next();
 }
 
-type UserWithFeatures = {
-  features: string;
-};
-
 function canRequest(feature: string) {
   return function canRequestMidlware(
     request: NextApiRequestWithContext,
@@ -123,9 +120,8 @@ function canRequest(feature: string) {
     next: () => void,
   ) {
     const userTryingToRequest = request.context!.user as UserWithFeatures;
-    const canRequestFeature = userTryingToRequest.features.includes(feature);
 
-    if (canRequestFeature) {
+    if (authorization.can(userTryingToRequest, feature)) {
       return next();
     }
 
