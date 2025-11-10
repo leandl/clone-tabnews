@@ -4,10 +4,19 @@ import { UnauthorizedError } from "@/infra/errors";
 
 const EXPIRATION_IN_MILLISECONDS = 60 * 60 * 24 * 30 * 1000; // 30 Days in ms
 
+export type Session = {
+  id: string;
+  token: string;
+  user_id: string;
+  expires_at: Date;
+  created_at: Date;
+  updated_at: Date;
+};
+
 async function createSession(
   userId: string,
   expirationInMs: number = EXPIRATION_IN_MILLISECONDS, // valor padrão
-) {
+): Promise<Session> {
   const token = crypto.randomBytes(48).toString("hex");
   const newSession = await runInsertQuery(userId, token, expirationInMs);
 
@@ -41,11 +50,11 @@ async function createSessionWithDefaultExpiration(userId: string) {
 async function createSessionWithCustomExpiration(
   userId: string,
   expiresInMs: number,
-) {
+): Promise<Session> {
   return await createSession(userId, expiresInMs);
 }
 
-async function findOneValidByToken(token: string) {
+async function findOneValidByToken(token: string): Promise<Session> {
   return runSelectQuery(token);
 
   async function runSelectQuery(token: string) {
@@ -75,7 +84,7 @@ async function findOneValidByToken(token: string) {
   }
 }
 
-async function renew(sessionId: string) {
+async function renew(sessionId: string): Promise<Session> {
   const renewSession = await runUpdateQuery(
     sessionId,
     EXPIRATION_IN_MILLISECONDS,
@@ -103,7 +112,7 @@ async function renew(sessionId: string) {
   }
 }
 
-async function expireById(sessionId: string) {
+async function expireById(sessionId: string): Promise<Session> {
   const expiredSessionObject = await runUpdateQuery(sessionId);
   return expiredSessionObject;
 

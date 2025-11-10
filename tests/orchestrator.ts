@@ -64,14 +64,24 @@ async function createUser(userObject?: Partial<UserCreateDTO>) {
 }
 
 async function activateUser(user: User) {
-  await activation.activateUserByUserId(user.id);
+  return await activation.activateUserByUserId(user.id);
+}
+
+async function createActivationTokenWithExpiration(
+  userId: string,
+  expiresInMs: number,
+) {
+  return await activation.create(userId, expiresInMs);
 }
 
 async function createSession(userId: string) {
   return await session.create(userId);
 }
 
-async function createWithExpiration(userId: string, expiresInMs: number) {
+async function createSessionWithExpiration(
+  userId: string,
+  expiresInMs: number,
+) {
   return await session.createWithExpiration(userId, expiresInMs);
 }
 
@@ -124,8 +134,9 @@ const orchestrator = {
   runPendingMigrations,
   createUser,
   activateUser,
+  createActivationTokenWithExpiration,
   createSession,
-  createWithExpiration,
+  createSessionWithExpiration,
   deleteAllEmails,
   getLastEmail,
   extractUUID,

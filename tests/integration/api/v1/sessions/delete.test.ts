@@ -39,7 +39,7 @@ describe("DELETE /api/v1/sessions", () => {
 
       // tempo de expiração negativo = já expirado
       const EXPIRED_SESSION_OFFSET_MS = -1;
-      const sessionObject = await orchestrator.createWithExpiration(
+      const sessionObject = await orchestrator.createSessionWithExpiration(
         user.id,
         EXPIRED_SESSION_OFFSET_MS,
       );

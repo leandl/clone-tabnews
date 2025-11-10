@@ -10,12 +10,30 @@ beforeAll(async () => {
 });
 
 describe("GET /api/v1/user", () => {
+  describe("Anonymous user", () => {
+    test("Retrieving the endpoint", async () => {
+      const response = await fetch(`http://localhost:3000/api/v1/user`);
+
+      expect(response.status).toBe(403);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        name: "ForbiddenError",
+        message: "Você não possui permissão para executar esta ação.",
+        action: 'Verifique se o seu usuário possui a feature "read:session"',
+        status_code: 403,
+      });
+    });
+  });
+
   describe("Default user", () => {
     test("With valid session", async () => {
       const user = await orchestrator.createUser({
         username: "UserWithValidSession",
       });
 
+      const activatedUser = await orchestrator.activateUser(user);
       const sessionObject = await orchestrator.createSession(user.id);
 
       const response = await fetch(`http://localhost:3000/api/v1/user`, {
@@ -31,9 +49,9 @@ describe("GET /api/v1/user", () => {
         username: user.username,
         email: user.email,
         password: user.password,
-        features: ["read:activation_token"],
+        features: ["create:session", "read:session"],
         created_at: user.created_at.toISOString(),
-        updated_at: user.updated_at.toISOString(),
+        updated_at: activatedUser.updated_at.toISOString(),
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
@@ -59,7 +77,7 @@ describe("GET /api/v1/user", () => {
 
       expect(
         renewedSessionObject.expires_at.getTime() -
-          renewedSessionObject.updated_at,
+          renewedSessionObject.updated_at.getTime(),
       ).toBe(session.EXPIRATION_IN_MILLISECONDS);
 
       // Set-Cookie assertions
@@ -84,8 +102,9 @@ describe("GET /api/v1/user", () => {
         username: "userWithHalfLifeSession",
       });
 
+      const activatedUser = await orchestrator.activateUser(user);
       const HALF_LIFE_MS = session.EXPIRATION_IN_MILLISECONDS / 2;
-      const sessionObject = await orchestrator.createWithExpiration(
+      const sessionObject = await orchestrator.createSessionWithExpiration(
         user.id,
         HALF_LIFE_MS,
       );
@@ -103,9 +122,9 @@ describe("GET /api/v1/user", () => {
         username: user.username,
         email: user.email,
         password: user.password,
-        features: ["read:activation_token"],
+        features: ["create:session", "read:session"],
         created_at: user.created_at.toISOString(),
-        updated_at: user.updated_at.toISOString(),
+        updated_at: activatedUser.updated_at.toISOString(),
       });
 
       expect(uuidVersion(responseBody.id)).toBe(4);
@@ -126,7 +145,7 @@ describe("GET /api/v1/user", () => {
 
       expect(
         renewedSessionObject.expires_at.getTime() -
-          renewedSessionObject.updated_at,
+          renewedSessionObject.updated_at.getTime(),
       ).toBe(session.EXPIRATION_IN_MILLISECONDS);
 
       // Set-Cookie assertions
@@ -173,7 +192,7 @@ describe("GET /api/v1/user", () => {
 
       // tempo de expiração negativo = já expirado
       const EXPIRED_SESSION_OFFSET_MS = -1;
-      const sessionObject = await orchestrator.createWithExpiration(
+      const sessionObject = await orchestrator.createSessionWithExpiration(
         user.id,
         EXPIRED_SESSION_OFFSET_MS,
       );
