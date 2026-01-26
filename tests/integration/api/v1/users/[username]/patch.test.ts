@@ -12,12 +12,40 @@ beforeAll(async () => {
 describe("PATCH /api/v1/users/[username]", () => {
   describe("Anonymous user", () => {
     test("With nonexistent 'username'", async () => {
+      const response = await fetch(
+        `http://localhost:3000/api/v1/users/anyname`,
+        {
+          method: "PATCH",
+        },
+      );
+
+      expect(response.status).toBe(403);
+
+      const responseBody = await response.json();
+      expect(responseBody).toEqual({
+        action: 'Verifique se o seu usuário possui a feature "update:user"',
+        message: "Você não possui permissão para executar esta ação.",
+        name: "ForbiddenError",
+        status_code: 403,
+      });
+    });
+  });
+
+  describe("Default user", () => {
+    test("With nonexistent 'username'", async () => {
+      const createdUser = await orchestrator.createUser();
+      const activatedUser = await orchestrator.activateUser(createdUser);
+      const sessionObject = await orchestrator.createSession(activatedUser.id);
+
       const NONEXISTENT_USERNAME = "UsuarioInexistente";
 
       const response = await fetch(
         `http://localhost:3000/api/v1/users/${NONEXISTENT_USERNAME}`,
         {
           method: "PATCH",
+          headers: {
+            Cookie: `session_id=${sessionObject.token}`,
+          },
         },
       );
 
@@ -40,6 +68,10 @@ describe("PATCH /api/v1/users/[username]", () => {
       const createdUser2 = await orchestrator.createUser({
         username: "user2",
       });
+      const activatedUser2 = await orchestrator.activateUser(createdUser2);
+      const sessionObject2 = await orchestrator.createSession(
+        activatedUser2.id,
+      );
 
       const response = await fetch(
         `http://localhost:3000/api/v1/users/${createdUser2.username}`,
@@ -47,6 +79,7 @@ describe("PATCH /api/v1/users/[username]", () => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            Cookie: `session_id=${sessionObject2.token}`,
           },
           body: JSON.stringify({
             username: createdUser1.username,
@@ -72,6 +105,10 @@ describe("PATCH /api/v1/users/[username]", () => {
       const createdUser2 = await orchestrator.createUser({
         email: "email2@email.com",
       });
+      const activatedUser2 = await orchestrator.activateUser(createdUser2);
+      const sessionObject2 = await orchestrator.createSession(
+        activatedUser2.id,
+      );
 
       const response = await fetch(
         `http://localhost:3000/api/v1/users/${createdUser2.username}`,
@@ -79,6 +116,7 @@ describe("PATCH /api/v1/users/[username]", () => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            Cookie: `session_id=${sessionObject2.token}`,
           },
           body: JSON.stringify({
             email: createdUser1.email,
@@ -98,6 +136,9 @@ describe("PATCH /api/v1/users/[username]", () => {
 
     test("With unique 'username'", async () => {
       const createdUser = await orchestrator.createUser();
+      const activatedUser = await orchestrator.activateUser(createdUser);
+      const sessionObject = await orchestrator.createSession(activatedUser.id);
+
       const USERNAME_TEST = "uniqueUser2";
 
       const response = await fetch(
@@ -106,6 +147,7 @@ describe("PATCH /api/v1/users/[username]", () => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            Cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
             username: USERNAME_TEST,
@@ -121,7 +163,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         username: USERNAME_TEST,
         email: createdUser.email,
         password: responseBody.password,
-        features: ["read:activation_token"],
+        features: ["create:session", "read:session", "update:user"],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
@@ -134,6 +176,9 @@ describe("PATCH /api/v1/users/[username]", () => {
 
     test("With unique 'email'", async () => {
       const createdUser = await orchestrator.createUser();
+      const activatedUser = await orchestrator.activateUser(createdUser);
+      const sessionObject = await orchestrator.createSession(activatedUser.id);
+
       const EMAIL_TEST = "uniqueEmail2";
 
       const response = await fetch(
@@ -142,6 +187,7 @@ describe("PATCH /api/v1/users/[username]", () => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            Cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
             email: EMAIL_TEST,
@@ -157,7 +203,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         username: createdUser.username,
         email: EMAIL_TEST,
         password: responseBody.password,
-        features: ["read:activation_token"],
+        features: ["create:session", "read:session", "update:user"],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
@@ -175,6 +221,8 @@ describe("PATCH /api/v1/users/[username]", () => {
       const createdUser = await orchestrator.createUser({
         password: PASSWORD_OLD_TEST,
       });
+      const activatedUser = await orchestrator.activateUser(createdUser);
+      const sessionObject = await orchestrator.createSession(activatedUser.id);
 
       const response = await fetch(
         `http://localhost:3000/api/v1/users/${createdUser.username}`,
@@ -182,6 +230,7 @@ describe("PATCH /api/v1/users/[username]", () => {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            Cookie: `session_id=${sessionObject.token}`,
           },
           body: JSON.stringify({
             password: PASSWORD_NEW_TEST,
@@ -197,7 +246,7 @@ describe("PATCH /api/v1/users/[username]", () => {
         username: createdUser.username,
         email: createdUser.email,
         password: responseBody.password,
-        features: ["read:activation_token"],
+        features: ["create:session", "read:session", "update:user"],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });

@@ -5,8 +5,9 @@ import user from "models/user";
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
+router.use(controller.injectAnonymousOrUser);
 router.get(getHandler);
-router.patch(patchHandler);
+router.patch(controller.canRequest("update:user"), patchHandler);
 
 export default router.handler(controller.errorHandlers);
 

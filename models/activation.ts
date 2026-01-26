@@ -129,6 +129,7 @@ async function activateUserByUserId(userId: string) {
   const activatedUser = user.setFeatures(userId, [
     "create:session",
     "read:session",
+    "update:user",
   ]);
   return activatedUser;
 }

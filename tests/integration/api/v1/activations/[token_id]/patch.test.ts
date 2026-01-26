@@ -132,6 +132,7 @@ describe("GET /api/v1/migrations", () => {
       expect(activatedUser.features).toEqual([
         "create:session",
         "read:session",
+        "update:user",
       ]);
     });
 
