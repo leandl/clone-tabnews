@@ -1,6 +1,7 @@
 import database from "@/infra/database";
 import password from "@/models/password";
 import { NotFoundError, ValidationError } from "@/infra/errors";
+import { Feature } from "./feature";
 
 async function validateUniqueUsername(username: string) {
   const results = await database.query({
@@ -155,7 +156,7 @@ export type User = {
   id: string;
   username: string;
   email: string;
-  features: string[];
+  features: Feature[];
   password: string;
   created_at: Date;
   updated_at: Date;
@@ -168,7 +169,7 @@ export type UserCreateDTO = {
 };
 
 type UserCreateDTOWithFeatures = UserCreateDTO & {
-  features: string[];
+  features: Feature[];
 };
 
 async function create(userInputValues: UserCreateDTO): Promise<User> {
