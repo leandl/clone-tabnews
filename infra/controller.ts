@@ -12,7 +12,7 @@ import session from "@/models/session";
 import user from "@/models/user";
 import { NextApiRequestWithContext } from "@/types/infra/next";
 import authorization, { UserWithFeatures } from "@/models/authorization";
-import { Feature } from "@/models/feature";
+import { Feature, features } from "@/models/feature";
 
 // import { isErrorWithStatusCode } from "./utils";
 
@@ -90,7 +90,11 @@ async function injectAuthenticatedUser(request: NextApiRequestWithContext) {
 
 async function injectAnonymousUser(request: NextApiRequestWithContext) {
   const anonymousUserObject = {
-    features: ["read:activation_token", "create:session", "create:user"],
+    features: [
+      features.READ.ACTIVATION_TOKEN,
+      features.CREATE.SESSION,
+      features.CREATE.USER,
+    ],
   };
 
   request.context = {

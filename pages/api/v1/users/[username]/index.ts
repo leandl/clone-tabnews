@@ -5,12 +5,13 @@ import user, { User } from "models/user";
 import { NextApiRequestWithContext } from "@/types/infra/next";
 import authorization from "@/models/authorization";
 import { ForbiddenError } from "@/infra/errors";
+import { features } from "@/models/feature";
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
 router.use(controller.injectAnonymousOrUser);
 router.get(getHandler);
-router.patch(controller.canRequest("update:user"), patchHandler);
+router.patch(controller.canRequest(features.UPDATE.USER.SELF), patchHandler);
 
 export default router.handler(controller.errorHandlers);
 
@@ -30,7 +31,9 @@ async function patchHandler(
   const userTryingToPatch = request.context?.user as User;
   const targetUser = await user.findOneByUsername(username);
 
-  if (!authorization.can(userTryingToPatch, "update:user", targetUser)) {
+  if (
+    !authorization.can(userTryingToPatch, features.UPDATE.USER.SELF, targetUser)
+  ) {
     throw new ForbiddenError({
       message: "Você não possui permissão para atualizar outro usuário.",
       action:

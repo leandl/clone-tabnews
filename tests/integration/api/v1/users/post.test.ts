@@ -2,6 +2,7 @@ import orchestrator from "tests/orchestrator";
 import user from "models/user";
 import password from "models/password";
 import { version as uuidVersion } from "uuid";
+import { features } from "@/models/feature";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -38,7 +39,7 @@ describe("POST /api/v1/users", () => {
         username: USER_TEST.username,
         email: USER_TEST.email,
         password: responseBody.password,
-        features: ["read:activation_token"],
+        features: [features.READ.ACTIVATION_TOKEN],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });

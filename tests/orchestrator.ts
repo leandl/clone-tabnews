@@ -7,6 +7,7 @@ import user, { User, UserCreateDTO } from "models/user";
 import session from "@/models/session";
 import { MailAddress, MailcatcherMessage } from "@/types/infra/email";
 import activation from "@/models/activation";
+import { Feature } from "@/models/feature";
 
 const emailHttpUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
 
@@ -65,6 +66,11 @@ async function createUser(userObject?: Partial<UserCreateDTO>) {
 
 async function activateUser(user: User) {
   return await activation.activateUserByUserId(user.id);
+}
+
+async function addFeaturesToUser(userObject: User, features: Feature[]) {
+  const updatedUser = await user.addFeatures(userObject.id, features);
+  return updatedUser;
 }
 
 async function createActivationTokenWithExpiration(
@@ -134,6 +140,7 @@ const orchestrator = {
   runPendingMigrations,
   createUser,
   activateUser,
+  addFeaturesToUser,
   createActivationTokenWithExpiration,
   createSession,
   createSessionWithExpiration,

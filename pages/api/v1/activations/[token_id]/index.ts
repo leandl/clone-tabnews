@@ -2,11 +2,15 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { createRouter } from "next-connect";
 import controller from "@/infra/controller";
 import activation from "@/models/activation";
+import { features } from "@/models/feature";
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
 router.use(controller.injectAnonymousOrUser);
-router.patch(controller.canRequest("read:activation_token"), patchHandler);
+router.patch(
+  controller.canRequest(features.READ.ACTIVATION_TOKEN),
+  patchHandler,
+);
 
 export default router.handler(controller.errorHandlers);
 

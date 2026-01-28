@@ -1,7 +1,7 @@
 import database from "@/infra/database";
 import password from "@/models/password";
 import { NotFoundError, ValidationError } from "@/infra/errors";
-import { Feature } from "./feature";
+import { Feature, features } from "./feature";
 
 async function validateUniqueUsername(username: string) {
   const results = await database.query({
@@ -50,7 +50,7 @@ function injectDefaultFeaturesInObject(
 ): UserCreateDTOWithFeatures {
   const userInputValuesWithFeatures: UserCreateDTOWithFeatures = {
     ...userInputValues,
-    features: ["read:activation_token"],
+    features: [features.READ.ACTIVATION_TOKEN],
   };
 
   return userInputValuesWithFeatures;
@@ -262,17 +262,41 @@ async function update(
   }
 }
 
-async function setFeatures(userId: string, features: string[]): Promise<User> {
+async function setFeatures(userId: string, features: Feature[]): Promise<User> {
   const updatedUser = runSetFeaturesQuery(userId, features);
   return updatedUser;
 
-  async function runSetFeaturesQuery(userId: string, features: string[]) {
+  async function runSetFeaturesQuery(userId: string, features: Feature[]) {
     const results = await database.query({
       text: `
       UPDATE
         users
       SET
         features = $2,
+        updated_at = timezone('utc', now())
+      WHERE
+        id = $1
+      RETURNING
+        *
+      ;`,
+      values: [userId, features],
+    });
+
+    return results.rows[0];
+  }
+}
+
+async function addFeatures(userId: string, features: Feature[]): Promise<User> {
+  const updatedUser = runSetFeaturesQuery(userId, features);
+  return updatedUser;
+
+  async function runSetFeaturesQuery(userId: string, features: Feature[]) {
+    const results = await database.query({
+      text: `
+      UPDATE
+        users
+      SET
+        features = array_cat(features, $2),
         updated_at = timezone('utc', now())
       WHERE
         id = $1
@@ -293,6 +317,7 @@ const user = {
   findOneByUsername,
   findOneByEmail,
   setFeatures,
+  addFeatures,
 };
 
 export default user;

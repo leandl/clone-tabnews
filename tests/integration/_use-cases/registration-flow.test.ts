@@ -1,4 +1,5 @@
 import activation from "@/models/activation";
+import { features } from "@/models/feature";
 import { Session } from "@/models/session";
 import user, { User } from "@/models/user";
 import orchestrator from "tests/orchestrator";
@@ -44,7 +45,7 @@ describe("Use case: Registration Flow (all sucessful)", () => {
       username: USER_TEST.username,
       email: USER_TEST.email,
       password: createUserResponseBody.password,
-      features: ["read:activation_token"],
+      features: [features.READ.ACTIVATION_TOKEN],
       created_at: createUserResponseBody.created_at,
       updated_at: createUserResponseBody.updated_at,
     });
@@ -81,9 +82,9 @@ describe("Use case: Registration Flow (all sucessful)", () => {
 
     const activatedUser = await user.findOneByUsername(USER_TEST.username);
     expect(activatedUser.features).toEqual([
-      "create:session",
-      "read:session",
-      "update:user",
+      features.CREATE.SESSION,
+      features.READ.SESSION,
+      features.UPDATE.USER.SELF,
     ]);
   });
   test("Login", async () => {

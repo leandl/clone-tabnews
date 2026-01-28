@@ -3,11 +3,12 @@ import { createRouter } from "next-connect";
 import controller from "@/infra/controller";
 import user from "models/user";
 import activation from "@/models/activation";
+import { features } from "@/models/feature";
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
 router.use(controller.injectAnonymousOrUser);
-router.post(controller.canRequest("create:user"), postHandler);
+router.post(controller.canRequest(features.CREATE.USER), postHandler);
 
 export default router.handler(controller.errorHandlers);
 

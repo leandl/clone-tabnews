@@ -1,3 +1,4 @@
+import { features } from "@/models/feature";
 import password from "@/models/password";
 import user from "@/models/user";
 import orchestrator from "tests/orchestrator";
@@ -204,7 +205,11 @@ describe("PATCH /api/v1/users/[username]", () => {
         username: USERNAME_TEST,
         email: createdUser.email,
         password: responseBody.password,
-        features: ["create:session", "read:session", "update:user"],
+        features: [
+          features.CREATE.SESSION,
+          features.READ.SESSION,
+          features.UPDATE.USER.SELF,
+        ],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
@@ -244,7 +249,11 @@ describe("PATCH /api/v1/users/[username]", () => {
         username: createdUser.username,
         email: EMAIL_TEST,
         password: responseBody.password,
-        features: ["create:session", "read:session", "update:user"],
+        features: [
+          features.CREATE.SESSION,
+          features.READ.SESSION,
+          features.UPDATE.USER.SELF,
+        ],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
@@ -287,7 +296,11 @@ describe("PATCH /api/v1/users/[username]", () => {
         username: createdUser.username,
         email: createdUser.email,
         password: responseBody.password,
-        features: ["create:session", "read:session", "update:user"],
+        features: [
+          features.CREATE.SESSION,
+          features.READ.SESSION,
+          features.UPDATE.USER.SELF,
+        ],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
@@ -311,6 +324,59 @@ describe("PATCH /api/v1/users/[username]", () => {
       );
 
       expect(incorrectPasswordMatch).toBe(false);
+    });
+  });
+
+  describe("Privileged user", () => {
+    test("With `update:user:others` targeting `defaultUser`", async () => {
+      const privilegedUser = await orchestrator.createUser();
+      const activatedPrivilegedUser =
+        await orchestrator.activateUser(privilegedUser);
+
+      await orchestrator.addFeaturesToUser(activatedPrivilegedUser, [
+        features.UPDATE.USER.OTHERS,
+      ]);
+
+      const privilegedUserSession = await orchestrator.createSession(
+        activatedPrivilegedUser.id,
+      );
+
+      const defaultUser = await orchestrator.createUser();
+
+      const NEW_USERNAME_TEST = "AlteradpPorPrivilegiado";
+
+      const response = await fetch(
+        `http://localhost:3000/api/v1/users/${defaultUser.username}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: `session_id=${privilegedUserSession.token}`,
+          },
+          body: JSON.stringify({
+            username: NEW_USERNAME_TEST,
+          }),
+        },
+      );
+
+      expect(response.status).toBe(200);
+
+      const responseBody = await response.json();
+
+      expect(responseBody).toEqual({
+        id: defaultUser.id,
+        username: NEW_USERNAME_TEST,
+        email: defaultUser.email,
+        password: defaultUser.password,
+        features: defaultUser.features,
+        created_at: defaultUser.created_at.toISOString(),
+        updated_at: responseBody.updated_at,
+      });
+
+      expect(uuidVersion(responseBody.id)).toBe(4);
+      expect(Date.parse(responseBody.created_at)).not.toBeNaN();
+      expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
+      expect(responseBody.updated_at > responseBody.created_at).toBe(true);
     });
   });
 });
