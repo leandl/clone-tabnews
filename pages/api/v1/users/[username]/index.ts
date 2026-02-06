@@ -11,14 +11,26 @@ const router = createRouter<NextApiRequest, NextApiResponse>();
 
 router.use(controller.injectAnonymousOrUser);
 router.get(getHandler);
-router.patch(controller.canRequest(features.UPDATE.USER.SELF), patchHandler);
+router.patch(controller.canRequest(features.UPDATE.USER.DEFAULT), patchHandler);
 
 export default router.handler(controller.errorHandlers);
 
-async function getHandler(request: NextApiRequest, response: NextApiResponse) {
+async function getHandler(
+  request: NextApiRequestWithContext,
+  response: NextApiResponse,
+) {
+  const userTryingToGet = request.context?.user as User;
+
   const username = request.query.username as string;
   const userFound = await user.findOneByUsername(username);
-  return response.status(200).json(userFound);
+
+  const secureOutputValues = authorization.filterOutput(
+    userTryingToGet,
+    features.READ.USER.DEFAULT,
+    userFound,
+  );
+
+  return response.status(200).json(secureOutputValues);
 }
 
 async function patchHandler(
@@ -32,7 +44,11 @@ async function patchHandler(
   const targetUser = await user.findOneByUsername(username);
 
   if (
-    !authorization.can(userTryingToPatch, features.UPDATE.USER.SELF, targetUser)
+    !authorization.can(
+      userTryingToPatch,
+      features.UPDATE.USER.DEFAULT,
+      targetUser,
+    )
   ) {
     throw new ForbiddenError({
       message: "Você não possui permissão para atualizar outro usuário.",
@@ -42,5 +58,12 @@ async function patchHandler(
   }
 
   const updatedUser = await user.update(username, userInputValues);
-  return response.status(200).json(updatedUser);
+
+  const secureOutputValues = authorization.filterOutput(
+    userTryingToPatch,
+    features.READ.USER.DEFAULT,
+    updatedUser,
+  );
+
+  return response.status(200).json(secureOutputValues);
 }

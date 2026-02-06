@@ -203,12 +203,11 @@ describe("PATCH /api/v1/users/[username]", () => {
       expect(responseBody).toEqual({
         id: responseBody.id,
         username: USERNAME_TEST,
-        email: createdUser.email,
-        password: responseBody.password,
         features: [
           features.CREATE.SESSION,
           features.READ.SESSION,
-          features.UPDATE.USER.SELF,
+          features.UPDATE.USER.DEFAULT,
+          features.READ.STATUS.DEFAULT,
         ],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -247,12 +246,11 @@ describe("PATCH /api/v1/users/[username]", () => {
       expect(responseBody).toEqual({
         id: responseBody.id,
         username: createdUser.username,
-        email: EMAIL_TEST,
-        password: responseBody.password,
         features: [
           features.CREATE.SESSION,
           features.READ.SESSION,
-          features.UPDATE.USER.SELF,
+          features.UPDATE.USER.DEFAULT,
+          features.READ.STATUS.DEFAULT,
         ],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -294,12 +292,11 @@ describe("PATCH /api/v1/users/[username]", () => {
       expect(responseBody).toEqual({
         id: responseBody.id,
         username: createdUser.username,
-        email: createdUser.email,
-        password: responseBody.password,
         features: [
           features.CREATE.SESSION,
           features.READ.SESSION,
-          features.UPDATE.USER.SELF,
+          features.UPDATE.USER.DEFAULT,
+          features.READ.STATUS.DEFAULT,
         ],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
@@ -366,8 +363,6 @@ describe("PATCH /api/v1/users/[username]", () => {
       expect(responseBody).toEqual({
         id: defaultUser.id,
         username: NEW_USERNAME_TEST,
-        email: defaultUser.email,
-        password: defaultUser.password,
         features: defaultUser.features,
         created_at: defaultUser.created_at.toISOString(),
         updated_at: responseBody.updated_at,

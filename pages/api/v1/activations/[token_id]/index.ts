@@ -3,6 +3,9 @@ import { createRouter } from "next-connect";
 import controller from "@/infra/controller";
 import activation from "@/models/activation";
 import { features } from "@/models/feature";
+import { NextApiRequestWithContext } from "@/types/infra/next";
+import { User } from "@/models/user";
+import authorization, { UserWithFeatures } from "@/models/authorization";
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
@@ -15,10 +18,12 @@ router.patch(
 export default router.handler(controller.errorHandlers);
 
 async function patchHandler(
-  request: NextApiRequest,
+  request: NextApiRequestWithContext,
   response: NextApiResponse,
 ) {
   const activationTokenId = request.query.token_id as string;
+  const userTryingToPatch = request.context?.user as User | UserWithFeatures;
+
   const validActivationToken =
     await activation.findOneValidById(activationTokenId);
 
@@ -27,5 +32,11 @@ async function patchHandler(
   const usedActivationToken =
     await activation.markTokenAsUsed(activationTokenId);
 
-  return response.status(200).json(usedActivationToken);
+  const secureOutputValues = authorization.filterOutput(
+    userTryingToPatch,
+    features.READ.ACTIVATION_TOKEN,
+    usedActivationToken,
+  );
+
+  return response.status(200).json(secureOutputValues);
 }

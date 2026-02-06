@@ -1,4 +1,5 @@
 import activation from "@/models/activation";
+import { features } from "@/models/feature";
 import user from "@/models/user";
 import orchestrator from "tests/orchestrator";
 
@@ -130,9 +131,10 @@ describe("GET /api/v1/migrations", () => {
 
       const activatedUser = await user.findOneById(responseBody.user_id);
       expect(activatedUser.features).toEqual([
-        "create:session",
-        "read:session",
-        "update:user",
+        features.CREATE.SESSION,
+        features.READ.SESSION,
+        features.UPDATE.USER.DEFAULT,
+        features.READ.STATUS.DEFAULT,
       ]);
     });
 

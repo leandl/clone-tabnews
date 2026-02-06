@@ -8,6 +8,7 @@ import { NextApiRequestWithContext } from "@/types/infra/next";
 import authorization from "@/models/authorization";
 import { ForbiddenError } from "@/infra/errors";
 import { features } from "@/models/feature";
+import { User } from "@/models/user";
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
@@ -38,19 +39,32 @@ async function postHandler(
   const newSession = await session.create(authenticateUser.id);
   controller.setSessionCookie(response, newSession.token);
 
-  return response.status(201).json(newSession);
+  const secureOutputValues = authorization.filterOutput(
+    authenticateUser,
+    features.READ.SESSION,
+    newSession,
+  );
+
+  return response.status(201).json(secureOutputValues);
 }
 
 async function deleteHandler(
-  request: NextApiRequest,
+  request: NextApiRequestWithContext,
   response: NextApiResponse,
 ) {
   const sessionToken = request.cookies.session_id;
+  const userTryingToDelete = request.context?.user as User;
 
   const sessionObject = await session.findOneValidByToken(sessionToken!);
   const expiredSessionObject = await session.expireById(sessionObject.id);
 
   controller.clearSessionCookie(response);
 
-  return response.status(200).json(expiredSessionObject);
+  const secureOutputValues = authorization.filterOutput(
+    userTryingToDelete,
+    features.READ.SESSION,
+    expiredSessionObject,
+  );
+
+  return response.status(200).json(secureOutputValues);
 }

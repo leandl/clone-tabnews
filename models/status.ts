@@ -1,10 +1,10 @@
 class DatetimeUTCString extends String {}
 
-export type APIStatusResponse = {
+export type APIStatus = {
   updated_at: DatetimeUTCString;
   dependencies: {
     database: {
-      version?: string;
+      version: string;
       max_connections: number;
       opened_connections: number;
     };

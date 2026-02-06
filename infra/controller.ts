@@ -89,11 +89,12 @@ async function injectAuthenticatedUser(request: NextApiRequestWithContext) {
 }
 
 async function injectAnonymousUser(request: NextApiRequestWithContext) {
-  const anonymousUserObject = {
+  const anonymousUserObject: UserWithFeatures = {
     features: [
       features.READ.ACTIVATION_TOKEN,
       features.CREATE.SESSION,
       features.CREATE.USER,
+      features.READ.STATUS.DEFAULT,
     ],
   };
 
