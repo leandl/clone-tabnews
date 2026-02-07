@@ -1,9 +1,10 @@
 import { RunMigration } from "node-pg-migrate/dist/migration";
 import { UserActivationToken } from "./activation";
-import { Feature, features } from "./feature";
+import { availableFeatures, Feature, features } from "./feature";
 import { Session } from "./session";
 import { User } from "./user";
 import { APIStatus } from "./status";
+import { InternalServerError } from "@/infra/errors";
 
 export type UserWithFeatures = {
   features: Feature[];
@@ -44,6 +45,9 @@ function can<F extends Feature>(
   feature: F,
   resource?: PermissionContext<F>,
 ): boolean {
+  validateUser(user);
+  validateFeature(feature);
+
   let authorized = false;
 
   if (user.features.includes(feature)) {
@@ -95,6 +99,10 @@ function filterOutput<F extends Feature>(
   feature: F,
   resource: ResourceFilterContext<F>,
 ) {
+  validateUser(userSession);
+  validateFeature(feature);
+  validateResource(resource);
+
   if (feature === features.READ.USER.DEFAULT) {
     const user = resource as User;
     return {
@@ -178,6 +186,32 @@ function filterOutput<F extends Feature>(
   }
 
   return {};
+}
+
+function validateUser(user: User | UserWithFeatures) {
+  if (!user || !user.features) {
+    throw new InternalServerError({
+      cause: "É necessário fornecer `user` no model `authorization`.",
+    });
+  }
+}
+
+function validateFeature(feature: Feature) {
+  if (!feature || !availableFeatures.includes(feature)) {
+    throw new InternalServerError({
+      cause:
+        "É necessário fornecer uma `feature` conhecida no model `authorization`.",
+    });
+  }
+}
+
+function validateResource(resource: unknown) {
+  if (!resource) {
+    throw new InternalServerError({
+      cause:
+        "É necessário fornecer um `resource` em `authorization.filterOutput()`.",
+    });
+  }
 }
 
 const authorization = {

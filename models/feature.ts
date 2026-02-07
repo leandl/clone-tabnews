@@ -34,3 +34,17 @@ type DeepValue<T> = T extends string
     : never;
 
 export type Feature = DeepValue<typeof features>;
+
+function extractFeatures(obj: unknown): Feature[] {
+  if (typeof obj === "string") {
+    return [obj] as Feature[];
+  }
+
+  if (typeof obj === "object" && obj !== null) {
+    return Object.values(obj).flatMap(extractFeatures);
+  }
+
+  return [];
+}
+
+export const availableFeatures = extractFeatures(features);
