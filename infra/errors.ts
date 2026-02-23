@@ -29,18 +29,23 @@ export class InternalServerError extends Error {
 type ServiceErrorOptions = {
   message?: string;
   cause?: unknown;
+  action?: string;
+  context?: unknown;
 };
 
 export class ServiceError extends Error {
-  public readonly action = "Verifique se o serviço está disponível.";
   public readonly statusCode = 503;
+  public action: string;
+  public context?: unknown;
 
-  constructor({ cause, message }: ServiceErrorOptions) {
+  constructor({ cause, message, action, context }: ServiceErrorOptions) {
     super(message ?? "Serviço indisponível no momento.", {
       cause,
     });
 
     this.name = "ServiceError";
+    this.action = action ?? "Verifique se o serviço está disponível.";
+    this.context = context;
   }
 
   toJSON() {
@@ -49,6 +54,7 @@ export class ServiceError extends Error {
       message: this.message,
       action: this.action,
       status_code: this.statusCode,
+      context: this.context,
     };
   }
 }
