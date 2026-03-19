@@ -1,3 +1,4 @@
+import { features } from "@/models/feature";
 import orchestrator from "tests/orchestrator";
 
 import { version as uuidVersion } from "uuid";
@@ -24,8 +25,7 @@ describe("GET /api/v1/users/[username]", () => {
       expect(responseBody).toEqual({
         id: responseBody.id,
         username: user.username,
-        email: user.email,
-        password: responseBody.password,
+        features: [features.READ.ACTIVATION_TOKEN],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });
@@ -52,8 +52,7 @@ describe("GET /api/v1/users/[username]", () => {
       expect(responseBody).toEqual({
         id: responseBody.id,
         username: user.username,
-        email: user.email,
-        password: responseBody.password,
+        features: [features.READ.ACTIVATION_TOKEN],
         created_at: responseBody.created_at,
         updated_at: responseBody.updated_at,
       });

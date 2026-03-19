@@ -1,17 +1,27 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import database from "@/infra/database";
-import { APIStatusResponse } from "@/types/pages/api/v1/status";
 
 import { createRouter } from "next-connect";
 import controller from "@/infra/controller";
+import authorization, { UserWithFeatures } from "@/models/authorization";
+import { User } from "@/models/user";
+import { NextApiRequestWithContext } from "@/types/infra/next";
+import { features } from "@/models/feature";
+import { APIStatus } from "@/models/status";
 
 const router = createRouter<NextApiRequest, NextApiResponse>();
 
-router.get(getHandler);
+router.use(controller.injectAnonymousOrUser);
+router.get(controller.canRequest(features.READ.STATUS.DEFAULT), getHandler);
 
 export default router.handler(controller.errorHandlers);
 
-async function getHandler(_request: NextApiRequest, response: NextApiResponse) {
+async function getHandler(
+  request: NextApiRequestWithContext,
+  response: NextApiResponse,
+) {
+  const userTryingToGet = request.context?.user as User | UserWithFeatures;
+
   const updatedAt = new Date().toISOString();
   const databaseVersionResult = await database.query("SHOW server_version;");
   const databaseVersionValue = databaseVersionResult.rows[0].server_version;
@@ -30,7 +40,7 @@ async function getHandler(_request: NextApiRequest, response: NextApiResponse) {
   const databaseOpenedConnectionsValue =
     databaseOpenedConnectionsResult.rows[0].opened_connections;
 
-  const responseBody: APIStatusResponse = {
+  const statusObject: APIStatus = {
     updated_at: updatedAt,
     dependencies: {
       database: {
@@ -41,5 +51,11 @@ async function getHandler(_request: NextApiRequest, response: NextApiResponse) {
     },
   };
 
-  response.status(200).json(responseBody);
+  const secureOutputValues = authorization.filterOutput(
+    userTryingToGet,
+    features.READ.STATUS.DEFAULT,
+    statusObject,
+  );
+
+  response.status(200).json(secureOutputValues);
 }

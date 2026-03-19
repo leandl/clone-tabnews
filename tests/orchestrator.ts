@@ -3,9 +3,11 @@ import { faker } from "@faker-js/faker";
 
 import migrator from "models/migrator";
 import database from "infra/database";
-import user, { UserCreateDTO } from "models/user";
+import user, { User, UserCreateDTO } from "models/user";
 import session from "@/models/session";
 import { MailAddress, MailcatcherMessage } from "@/types/infra/email";
+import activation from "@/models/activation";
+import { Feature } from "@/models/feature";
 
 const emailHttpUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
 
@@ -62,11 +64,30 @@ async function createUser(userObject?: Partial<UserCreateDTO>) {
   });
 }
 
+async function activateUser(user: User) {
+  return await activation.activateUserByUserId(user.id);
+}
+
+async function addFeaturesToUser(userObject: User, features: Feature[]) {
+  const updatedUser = await user.addFeatures(userObject.id, features);
+  return updatedUser;
+}
+
+async function createActivationTokenWithExpiration(
+  userId: string,
+  expiresInMs: number,
+) {
+  return await activation.create(userId, expiresInMs);
+}
+
 async function createSession(userId: string) {
   return await session.create(userId);
 }
 
-async function createWithExpiration(userId: string, expiresInMs: number) {
+async function createSessionWithExpiration(
+  userId: string,
+  expiresInMs: number,
+) {
   return await session.createWithExpiration(userId, expiresInMs);
 }
 
@@ -108,15 +129,24 @@ async function getLastEmail(): Promise<EmailData | null> {
   };
 }
 
+function extractUUID(text: string): string | null {
+  const match = text.match(/[0-9a-fA-F-]{36}/);
+  return match ? match[0] : null;
+}
+
 const orchestrator = {
   waitForAllServices,
   clearDatabase,
   runPendingMigrations,
   createUser,
+  activateUser,
+  addFeaturesToUser,
+  createActivationTokenWithExpiration,
   createSession,
-  createWithExpiration,
+  createSessionWithExpiration,
   deleteAllEmails,
   getLastEmail,
+  extractUUID,
 };
 
 export default orchestrator;

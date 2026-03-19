@@ -1,6 +1,7 @@
 import database from "@/infra/database";
 import password from "@/models/password";
 import { NotFoundError, ValidationError } from "@/infra/errors";
+import { Feature, features } from "./feature";
 
 async function validateUniqueUsername(username: string) {
   const results = await database.query({
@@ -44,6 +45,17 @@ async function validateUniqueEmail(email: string) {
   }
 }
 
+function injectDefaultFeaturesInObject(
+  userInputValues: UserCreateDTO,
+): UserCreateDTOWithFeatures {
+  const userInputValuesWithFeatures: UserCreateDTOWithFeatures = {
+    ...userInputValues,
+    features: [features.READ.ACTIVATION_TOKEN],
+  };
+
+  return userInputValuesWithFeatures;
+}
+
 type ChangePasswordDTO = {
   password: string;
 };
@@ -53,7 +65,7 @@ async function hashPasswordInObject(input: ChangePasswordDTO) {
   input.password = hashedPassword;
 }
 
-async function findOneByUsername(username: string) {
+async function findOneByUsername(username: string): Promise<User> {
   return runSelectQuery(username);
 
   async function runSelectQuery(username: string) {
@@ -82,7 +94,7 @@ async function findOneByUsername(username: string) {
   }
 }
 
-async function findOneByEmail(email: string) {
+async function findOneByEmail(email: string): Promise<User> {
   return runSelectQuery(email);
 
   async function runSelectQuery(email: string) {
@@ -111,7 +123,7 @@ async function findOneByEmail(email: string) {
   }
 }
 
-async function findOneById(id: string) {
+async function findOneById(id: string): Promise<User> {
   return runSelectQuery(id);
 
   async function runSelectQuery(id: string) {
@@ -140,10 +152,11 @@ async function findOneById(id: string) {
   }
 }
 
-type User = {
+export type User = {
   id: string;
   username: string;
   email: string;
+  features: Feature[];
   password: string;
   created_at: Date;
   updated_at: Date;
@@ -155,28 +168,38 @@ export type UserCreateDTO = {
   password: string;
 };
 
+type UserCreateDTOWithFeatures = UserCreateDTO & {
+  features: Feature[];
+};
+
 async function create(userInputValues: UserCreateDTO): Promise<User> {
   await validateUniqueUsername(userInputValues.username);
   await validateUniqueEmail(userInputValues.email);
   await hashPasswordInObject(userInputValues);
 
-  const newUser = await runInsertQuery(userInputValues);
+  const userInputValuesWithFeatures =
+    injectDefaultFeaturesInObject(userInputValues);
+
+  const newUser = await runInsertQuery(userInputValuesWithFeatures);
   return newUser;
 
-  async function runInsertQuery(userInputValues: UserCreateDTO) {
+  async function runInsertQuery(
+    userInputValuesWithFeatures: UserCreateDTOWithFeatures,
+  ) {
     const results = await database.query({
       text: `
       INSERT INTO 
-        users (username, email, password) 
+        users (username, email, password, features) 
       VALUES 
-        ($1, $2, $3)
+        ($1, $2, $3, $4)
       RETURNING
         *
       ;`,
       values: [
-        userInputValues.username,
-        userInputValues.email,
-        userInputValues.password,
+        userInputValuesWithFeatures.username,
+        userInputValuesWithFeatures.email,
+        userInputValuesWithFeatures.password,
+        userInputValuesWithFeatures.features,
       ],
     });
 
@@ -239,12 +262,62 @@ async function update(
   }
 }
 
+async function setFeatures(userId: string, features: Feature[]): Promise<User> {
+  const updatedUser = runSetFeaturesQuery(userId, features);
+  return updatedUser;
+
+  async function runSetFeaturesQuery(userId: string, features: Feature[]) {
+    const results = await database.query({
+      text: `
+      UPDATE
+        users
+      SET
+        features = $2,
+        updated_at = timezone('utc', now())
+      WHERE
+        id = $1
+      RETURNING
+        *
+      ;`,
+      values: [userId, features],
+    });
+
+    return results.rows[0];
+  }
+}
+
+async function addFeatures(userId: string, features: Feature[]): Promise<User> {
+  const updatedUser = runSetFeaturesQuery(userId, features);
+  return updatedUser;
+
+  async function runSetFeaturesQuery(userId: string, features: Feature[]) {
+    const results = await database.query({
+      text: `
+      UPDATE
+        users
+      SET
+        features = array_cat(features, $2),
+        updated_at = timezone('utc', now())
+      WHERE
+        id = $1
+      RETURNING
+        *
+      ;`,
+      values: [userId, features],
+    });
+
+    return results.rows[0];
+  }
+}
+
 const user = {
   create,
   update,
   findOneById,
   findOneByUsername,
   findOneByEmail,
+  setFeatures,
+  addFeatures,
 };
 
 export default user;
