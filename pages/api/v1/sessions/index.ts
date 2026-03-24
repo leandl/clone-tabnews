@@ -24,7 +24,7 @@ async function postHandler(
 ) {
   const userInputValues = request.body;
 
-  const authenticateUser = await authentication.getAuthenticatedUser(
+  const authenticateUser = await authentication.getUser(
     userInputValues.email,
     userInputValues.password,
   );
