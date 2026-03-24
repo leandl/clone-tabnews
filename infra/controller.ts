@@ -51,10 +51,7 @@ function onErrorHandler(
   return response.status(publicErrorObject.statusCode).json(publicErrorObject);
 }
 
-async function setSessionCookie(
-  response: NextApiResponse,
-  sessionToken: string,
-) {
+function setSessionCookie(response: NextApiResponse, sessionToken: string) {
   const setCookie = cookie.serialize("session_id", sessionToken, {
     path: "/",
     maxAge: session.EXPIRATION_IN_MILLISECONDS / 1000,
@@ -65,7 +62,7 @@ async function setSessionCookie(
   response.setHeader("Set-Cookie", setCookie);
 }
 
-async function clearSessionCookie(response: NextApiResponse) {
+function clearSessionCookie(response: NextApiResponse) {
   const setCookie = cookie.serialize("session_id", "invalid", {
     path: "/",
     maxAge: -1,
