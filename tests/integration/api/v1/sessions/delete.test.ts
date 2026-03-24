@@ -112,6 +112,7 @@ describe("DELETE /api/v1/sessions", () => {
         path: "/",
         maxAge: -1,
         httpOnly: true,
+        sameSite: "Lax",
       });
 
       // Double check assertions
