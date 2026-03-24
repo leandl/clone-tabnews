@@ -18,7 +18,7 @@ import { Feature, features } from "@/models/feature";
 
 function onNoMatchHandler(_request: NextApiRequest, response: NextApiResponse) {
   const publicErrorObject = new MethodNotAllowedError();
-  response.status(publicErrorObject.statusCode).json(publicErrorObject);
+  return response.status(publicErrorObject.statusCode).json(publicErrorObject);
 }
 
 function onErrorHandler(
@@ -48,7 +48,7 @@ function onErrorHandler(
   });
 
   console.error(publicErrorObject);
-  response.status(publicErrorObject.statusCode).json(publicErrorObject);
+  return response.status(publicErrorObject.statusCode).json(publicErrorObject);
 }
 
 async function setSessionCookie(
