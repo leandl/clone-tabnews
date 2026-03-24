@@ -1,3 +1,4 @@
+import webserver from "@/infra/webserver";
 import { features } from "@/models/feature";
 import { APIStatusResponse } from "@/types/pages/api/v1/status";
 import orchestrator from "tests/orchestrator";
@@ -8,7 +9,7 @@ beforeAll(async () => {
 describe("GET /api/v1/status", () => {
   describe("Anonymous user", () => {
     test("Retrieving current system status", async () => {
-      const response = await fetch("http://localhost:3000/api/v1/status");
+      const response = await fetch(`${webserver.origin}/api/v1/status`);
       expect(response.status).toBe(200);
 
       const responseBody = (await response.json()) as APIStatusResponse;
@@ -30,7 +31,7 @@ describe("GET /api/v1/status", () => {
       const user = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(user);
       const sessionObject = await orchestrator.createSession(activatedUser.id);
-      const response = await fetch("http://localhost:3000/api/v1/status", {
+      const response = await fetch(`${webserver.origin}/api/v1/status`, {
         headers: {
           Cookie: `session_id=${sessionObject.token}`,
         },
@@ -60,7 +61,7 @@ describe("GET /api/v1/status", () => {
       await orchestrator.addFeaturesToUser(activatedUser, [
         features.READ.STATUS.ALL,
       ]);
-      const response = await fetch("http://localhost:3000/api/v1/status", {
+      const response = await fetch(`${webserver.origin}/api/v1/status`, {
         headers: {
           Cookie: `session_id=${sessionObject.token}`,
         },

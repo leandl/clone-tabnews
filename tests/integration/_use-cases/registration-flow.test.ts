@@ -1,3 +1,4 @@
+import webserver from "@/infra/webserver";
 import activation from "@/models/activation";
 import { features } from "@/models/feature";
 import { Session } from "@/models/session";
@@ -22,20 +23,17 @@ describe("Use case: Registration Flow (all sucessful)", () => {
   };
 
   test("Create user account", async () => {
-    const createUserResponse = await fetch(
-      "http://localhost:3000/api/v1/users",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: USER_TEST.username,
-          email: USER_TEST.email,
-          password: USER_TEST.password,
-        }),
+    const createUserResponse = await fetch(`${webserver.origin}/api/v1/users`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({
+        username: USER_TEST.username,
+        email: USER_TEST.email,
+        password: USER_TEST.password,
+      }),
+    });
 
     expect(createUserResponse.status).toBe(201);
 
@@ -67,7 +65,7 @@ describe("Use case: Registration Flow (all sucessful)", () => {
 
   test("Activate account", async () => {
     const activationResponse = await fetch(
-      `http://localhost:3000/api/v1/activations/${activationTokenUUID}`,
+      `${webserver.origin}/api/v1/activations/${activationTokenUUID}`,
       {
         method: "PATCH",
       },
@@ -88,7 +86,7 @@ describe("Use case: Registration Flow (all sucessful)", () => {
   });
   test("Login", async () => {
     const createSessionResponse = await fetch(
-      "http://localhost:3000/api/v1/sessions",
+      `${webserver.origin}/api/v1/sessions`,
       {
         method: "POST",
         headers: {
@@ -107,7 +105,7 @@ describe("Use case: Registration Flow (all sucessful)", () => {
   });
 
   test("Get user information", async () => {
-    const response = await fetch(`http://localhost:3000/api/v1/user`, {
+    const response = await fetch(`${webserver.origin}/api/v1/user`, {
       headers: {
         Cookie: `session_id=${createSessionResponseBody.token}`,
       },

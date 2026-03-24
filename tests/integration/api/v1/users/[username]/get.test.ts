@@ -1,3 +1,4 @@
+import webserver from "@/infra/webserver";
 import { features } from "@/models/feature";
 import orchestrator from "tests/orchestrator";
 
@@ -17,7 +18,7 @@ describe("GET /api/v1/users/[username]", () => {
       });
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/users/${user.username}`,
+        `${webserver.origin}/api/v1/users/${user.username}`,
       );
 
       expect(response.status).toBe(200);
@@ -44,7 +45,7 @@ describe("GET /api/v1/users/[username]", () => {
       });
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/users/${USERNAME_LOWERCASE_VARIANT}`,
+        `${webserver.origin}/api/v1/users/${USERNAME_LOWERCASE_VARIANT}`,
       );
 
       expect(response.status).toBe(200);
@@ -66,7 +67,7 @@ describe("GET /api/v1/users/[username]", () => {
       const NONEXISTENT_USERNAME = "UsuarioInexistente";
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/users/${NONEXISTENT_USERNAME}`,
+        `${webserver.origin}/api/v1/users/${NONEXISTENT_USERNAME}`,
       );
 
       expect(response.status).toBe(404);

@@ -1,3 +1,4 @@
+import webserver from "@/infra/webserver";
 import { features } from "@/models/feature";
 import password from "@/models/password";
 import user from "@/models/user";
@@ -13,12 +14,9 @@ beforeAll(async () => {
 describe("PATCH /api/v1/users/[username]", () => {
   describe("Anonymous user", () => {
     test("With nonexistent `username`", async () => {
-      const response = await fetch(
-        `http://localhost:3000/api/v1/users/anyname`,
-        {
-          method: "PATCH",
-        },
-      );
+      const response = await fetch(`${webserver.origin}/api/v1/users/anyname`, {
+        method: "PATCH",
+      });
 
       expect(response.status).toBe(403);
 
@@ -41,7 +39,7 @@ describe("PATCH /api/v1/users/[username]", () => {
       const NONEXISTENT_USERNAME = "UsuarioInexistente";
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/users/${NONEXISTENT_USERNAME}`,
+        `${webserver.origin}/api/v1/users/${NONEXISTENT_USERNAME}`,
         {
           method: "PATCH",
           headers: {
@@ -75,7 +73,7 @@ describe("PATCH /api/v1/users/[username]", () => {
       );
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/users/${createdUser2.username}`,
+        `${webserver.origin}/api/v1/users/${createdUser2.username}`,
         {
           method: "PATCH",
           headers: {
@@ -114,7 +112,7 @@ describe("PATCH /api/v1/users/[username]", () => {
       const NEW_USERNAME_TEST = "userC";
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/users/${createdUserA.username}`,
+        `${webserver.origin}/api/v1/users/${createdUserA.username}`,
         {
           method: "PATCH",
           headers: {
@@ -153,7 +151,7 @@ describe("PATCH /api/v1/users/[username]", () => {
       );
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/users/${createdUser2.username}`,
+        `${webserver.origin}/api/v1/users/${createdUser2.username}`,
         {
           method: "PATCH",
           headers: {
@@ -184,7 +182,7 @@ describe("PATCH /api/v1/users/[username]", () => {
       const USERNAME_TEST = "uniqueUser2";
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/users/${createdUser.username}`,
+        `${webserver.origin}/api/v1/users/${createdUser.username}`,
         {
           method: "PATCH",
           headers: {
@@ -227,7 +225,7 @@ describe("PATCH /api/v1/users/[username]", () => {
       const EMAIL_TEST = "uniqueEmail2";
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/users/${createdUser.username}`,
+        `${webserver.origin}/api/v1/users/${createdUser.username}`,
         {
           method: "PATCH",
           headers: {
@@ -273,7 +271,7 @@ describe("PATCH /api/v1/users/[username]", () => {
       const sessionObject = await orchestrator.createSession(activatedUser.id);
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/users/${createdUser.username}`,
+        `${webserver.origin}/api/v1/users/${createdUser.username}`,
         {
           method: "PATCH",
           headers: {
@@ -343,7 +341,7 @@ describe("PATCH /api/v1/users/[username]", () => {
       const NEW_USERNAME_TEST = "AlteradpPorPrivilegiado";
 
       const response = await fetch(
-        `http://localhost:3000/api/v1/users/${defaultUser.username}`,
+        `${webserver.origin}/api/v1/users/${defaultUser.username}`,
         {
           method: "PATCH",
           headers: {
