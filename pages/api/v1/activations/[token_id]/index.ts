@@ -7,15 +7,10 @@ import { NextApiRequestWithContext } from "@/types/infra/next";
 import { User } from "@/models/user";
 import authorization, { UserWithFeatures } from "@/models/authorization";
 
-const router = createRouter<NextApiRequest, NextApiResponse>();
-
-router.use(controller.injectAnonymousOrUser);
-router.patch(
-  controller.canRequest(features.READ.ACTIVATION_TOKEN),
-  patchHandler,
-);
-
-export default router.handler(controller.errorHandlers);
+export default createRouter<NextApiRequest, NextApiResponse>()
+  .use(controller.injectAnonymousOrUser)
+  .patch(controller.canRequest(features.READ.ACTIVATION_TOKEN), patchHandler)
+  .handler(controller.errorHandlers);
 
 async function patchHandler(
   request: NextApiRequestWithContext,

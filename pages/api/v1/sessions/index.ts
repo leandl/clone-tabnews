@@ -10,13 +10,11 @@ import { ForbiddenError } from "@/infra/errors";
 import { features } from "@/models/feature";
 import { User } from "@/models/user";
 
-const router = createRouter<NextApiRequest, NextApiResponse>();
-
-router.use(controller.injectAnonymousOrUser);
-router.post(controller.canRequest(features.CREATE.SESSION), postHandler);
-router.delete(deleteHandler);
-
-export default router.handler(controller.errorHandlers);
+export default createRouter<NextApiRequest, NextApiResponse>()
+  .use(controller.injectAnonymousOrUser)
+  .post(controller.canRequest(features.CREATE.SESSION), postHandler)
+  .delete(deleteHandler)
+  .handler(controller.errorHandlers);
 
 async function postHandler(
   request: NextApiRequestWithContext,
