@@ -5,6 +5,8 @@ import orchestrator from "tests/orchestrator";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
+  await orchestrator.clearDatabase();
+  await orchestrator.runPendingMigrations();
 });
 describe("GET /api/v1/status", () => {
   describe("Anonymous user", () => {
