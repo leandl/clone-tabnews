@@ -36,7 +36,7 @@ describe("GET /api/v1/user", () => {
       });
 
       const activatedUser = await orchestrator.activateUser(user);
-      const sessionObject = await orchestrator.createSession(user.id);
+      const sessionObject = await orchestrator.createSession(user);
 
       const response = await fetch(`${webserver.origin}/api/v1/user`, {
         headers: {

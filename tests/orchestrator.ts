@@ -74,15 +74,15 @@ async function addFeaturesToUser(userObject: User, features: Feature[]) {
   return updatedUser;
 }
 
+async function createSession(user: User) {
+  return await session.create(user.id);
+}
+
 async function createActivationTokenWithExpiration(
   userId: string,
   expiresInMs: number,
 ) {
   return await activation.create(userId, expiresInMs);
-}
-
-async function createSession(userId: string) {
-  return await session.create(userId);
 }
 
 async function createSessionWithExpiration(
