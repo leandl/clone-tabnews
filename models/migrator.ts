@@ -1,10 +1,10 @@
 import database from "@/infra/database";
 import migrationRunner, { RunnerOption } from "node-pg-migrate";
-import { resolve } from "node:path";
+import { join } from "node:path";
 
 const defaultMigrationOptions: Omit<RunnerOption, "dbClient"> = {
   dryRun: true,
-  dir: resolve("infra", "migrations"),
+  dir: join(process.cwd(), "infra", "migrations"),
   direction: "up",
   log: () => {},
   migrationsTable: "pgmigrations",
