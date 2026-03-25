@@ -18,7 +18,7 @@ import { Feature, features } from "@/models/feature";
 
 function onNoMatchHandler(_request: NextApiRequest, response: NextApiResponse) {
   const publicErrorObject = new MethodNotAllowedError();
-  response.status(publicErrorObject.statusCode).json(publicErrorObject);
+  return response.status(publicErrorObject.statusCode).json(publicErrorObject);
 }
 
 function onErrorHandler(
@@ -48,29 +48,28 @@ function onErrorHandler(
   });
 
   console.error(publicErrorObject);
-  response.status(publicErrorObject.statusCode).json(publicErrorObject);
+  return response.status(publicErrorObject.statusCode).json(publicErrorObject);
 }
 
-async function setSessionCookie(
-  response: NextApiResponse,
-  sessionToken: string,
-) {
+function setSessionCookie(response: NextApiResponse, sessionToken: string) {
   const setCookie = cookie.serialize("session_id", sessionToken, {
     path: "/",
     maxAge: session.EXPIRATION_IN_MILLISECONDS / 1000,
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
+    sameSite: "lax",
   });
 
   response.setHeader("Set-Cookie", setCookie);
 }
 
-async function clearSessionCookie(response: NextApiResponse) {
+function clearSessionCookie(response: NextApiResponse) {
   const setCookie = cookie.serialize("session_id", "invalid", {
     path: "/",
     maxAge: -1,
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
+    sameSite: "lax",
   });
 
   response.setHeader("Set-Cookie", setCookie);

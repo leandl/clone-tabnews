@@ -3,6 +3,7 @@ import orchestrator from "tests/orchestrator";
 import { version as uuidVersion } from "uuid";
 import setCookieParser from "set-cookie-parser";
 import { features } from "@/models/feature";
+import webserver from "@/infra/webserver";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -13,7 +14,7 @@ beforeAll(async () => {
 describe("GET /api/v1/user", () => {
   describe("Anonymous user", () => {
     test("Retrieving the endpoint", async () => {
-      const response = await fetch(`http://localhost:3000/api/v1/user`);
+      const response = await fetch(`${webserver.origin}/api/v1/user`);
 
       expect(response.status).toBe(403);
 
@@ -35,9 +36,9 @@ describe("GET /api/v1/user", () => {
       });
 
       const activatedUser = await orchestrator.activateUser(user);
-      const sessionObject = await orchestrator.createSession(user.id);
+      const sessionObject = await orchestrator.createSession(user);
 
-      const response = await fetch(`http://localhost:3000/api/v1/user`, {
+      const response = await fetch(`${webserver.origin}/api/v1/user`, {
         headers: {
           Cookie: `session_id=${sessionObject.token}`,
         },
@@ -99,6 +100,7 @@ describe("GET /api/v1/user", () => {
         path: "/",
         maxAge: session.EXPIRATION_IN_MILLISECONDS / 1000,
         httpOnly: true,
+        sameSite: "Lax",
       });
     });
 
@@ -114,7 +116,7 @@ describe("GET /api/v1/user", () => {
         HALF_LIFE_MS,
       );
 
-      const response = await fetch(`http://localhost:3000/api/v1/user`, {
+      const response = await fetch(`${webserver.origin}/api/v1/user`, {
         headers: {
           Cookie: `session_id=${sessionObject.token}`,
         },
@@ -171,6 +173,7 @@ describe("GET /api/v1/user", () => {
         path: "/",
         maxAge: session.EXPIRATION_IN_MILLISECONDS / 1000,
         httpOnly: true,
+        sameSite: "Lax",
       });
     });
 
@@ -178,7 +181,7 @@ describe("GET /api/v1/user", () => {
       const nonexistentToken =
         "164ed137d06cafffebc4c44d21f358a6bf8a79a2ff2009174c07a94c66e5c128fb94fa445897a2f3ff361069e700fb04";
 
-      const response = await fetch(`http://localhost:3000/api/v1/user`, {
+      const response = await fetch(`${webserver.origin}/api/v1/user`, {
         headers: {
           Cookie: `session_id=${nonexistentToken}`,
         },
@@ -205,7 +208,7 @@ describe("GET /api/v1/user", () => {
         user.id,
         EXPIRED_SESSION_OFFSET_MS,
       );
-      const response = await fetch(`http://localhost:3000/api/v1/user`, {
+      const response = await fetch(`${webserver.origin}/api/v1/user`, {
         headers: {
           Cookie: `session_id=${sessionObject.token}`,
         },

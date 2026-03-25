@@ -7,13 +7,11 @@ import authorization from "@/models/authorization";
 import { ForbiddenError } from "@/infra/errors";
 import { features } from "@/models/feature";
 
-const router = createRouter<NextApiRequest, NextApiResponse>();
-
-router.use(controller.injectAnonymousOrUser);
-router.get(getHandler);
-router.patch(controller.canRequest(features.UPDATE.USER.DEFAULT), patchHandler);
-
-export default router.handler(controller.errorHandlers);
+export default createRouter<NextApiRequest, NextApiResponse>()
+  .use(controller.injectAnonymousOrUser)
+  .get(getHandler)
+  .patch(controller.canRequest(features.UPDATE.USER.DEFAULT), patchHandler)
+  .handler(controller.errorHandlers);
 
 async function getHandler(
   request: NextApiRequestWithContext,

@@ -9,12 +9,10 @@ import { NextApiRequestWithContext } from "@/types/infra/next";
 import { features } from "@/models/feature";
 import { APIStatus } from "@/models/status";
 
-const router = createRouter<NextApiRequest, NextApiResponse>();
-
-router.use(controller.injectAnonymousOrUser);
-router.get(controller.canRequest(features.READ.STATUS.DEFAULT), getHandler);
-
-export default router.handler(controller.errorHandlers);
+export default createRouter<NextApiRequest, NextApiResponse>()
+  .use(controller.injectAnonymousOrUser)
+  .get(controller.canRequest(features.READ.STATUS.DEFAULT), getHandler)
+  .handler(controller.errorHandlers);
 
 async function getHandler(
   request: NextApiRequestWithContext,
@@ -57,5 +55,5 @@ async function getHandler(
     statusObject,
   );
 
-  response.status(200).json(secureOutputValues);
+  return response.status(200).json(secureOutputValues);
 }

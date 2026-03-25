@@ -36,10 +36,7 @@ async function validatePassword(
   }
 }
 
-async function getAuthenticatedUser(
-  providedEmail: string,
-  providedPassword: string,
-) {
+async function getUser(providedEmail: string, providedPassword: string) {
   try {
     const storedUser = await findUserByEmail(providedEmail);
     await validatePassword(providedPassword, storedUser.password);
@@ -58,7 +55,7 @@ async function getAuthenticatedUser(
 }
 
 const authentication = {
-  getAuthenticatedUser,
+  getUser,
 };
 
 export default authentication;

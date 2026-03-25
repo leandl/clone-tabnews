@@ -8,13 +8,14 @@ import session from "@/models/session";
 import { MailAddress, MailcatcherMessage } from "@/types/infra/email";
 import activation from "@/models/activation";
 import { Feature } from "@/models/feature";
+import webserver from "@/infra/webserver";
 
 const emailHttpUrl = `http://${process.env.EMAIL_HTTP_HOST}:${process.env.EMAIL_HTTP_PORT}`;
 
 async function waitForAllServices() {
   async function waitForWebServer() {
     async function fetchStatusPage() {
-      const response = await fetch("http://localhost:3000/api/v1/status");
+      const response = await fetch(`${webserver.origin}/api/v1/status`);
 
       if (!response.ok) {
         throw new Error();
@@ -73,15 +74,15 @@ async function addFeaturesToUser(userObject: User, features: Feature[]) {
   return updatedUser;
 }
 
+async function createSession(user: User) {
+  return await session.create(user.id);
+}
+
 async function createActivationTokenWithExpiration(
   userId: string,
   expiresInMs: number,
 ) {
   return await activation.create(userId, expiresInMs);
-}
-
-async function createSession(userId: string) {
-  return await session.create(userId);
 }
 
 async function createSessionWithExpiration(

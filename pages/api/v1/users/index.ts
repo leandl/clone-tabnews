@@ -7,12 +7,10 @@ import { features } from "@/models/feature";
 import { NextApiRequestWithContext } from "@/types/infra/next";
 import authorization, { UserWithFeatures } from "@/models/authorization";
 
-const router = createRouter<NextApiRequest, NextApiResponse>();
-
-router.use(controller.injectAnonymousOrUser);
-router.post(controller.canRequest(features.CREATE.USER), postHandler);
-
-export default router.handler(controller.errorHandlers);
+export default createRouter<NextApiRequest, NextApiResponse>()
+  .use(controller.injectAnonymousOrUser)
+  .post(controller.canRequest(features.CREATE.USER), postHandler)
+  .handler(controller.errorHandlers);
 
 async function postHandler(
   request: NextApiRequestWithContext,

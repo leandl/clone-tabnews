@@ -3,6 +3,7 @@ import orchestrator from "tests/orchestrator";
 
 import { version as uuidVersion } from "uuid";
 import setCookieParser from "set-cookie-parser";
+import webserver from "@/infra/webserver";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -20,7 +21,7 @@ describe("POST /api/v1/sessions", () => {
         password: CORRECT_PASSWORD,
       });
 
-      const response = await fetch("http://localhost:3000/api/v1/sessions", {
+      const response = await fetch(`${webserver.origin}/api/v1/sessions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -49,7 +50,7 @@ describe("POST /api/v1/sessions", () => {
         email: CORRECT_EMAIL,
       });
 
-      const response = await fetch("http://localhost:3000/api/v1/sessions", {
+      const response = await fetch(`${webserver.origin}/api/v1/sessions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -76,7 +77,7 @@ describe("POST /api/v1/sessions", () => {
 
       await orchestrator.createUser();
 
-      const response = await fetch("http://localhost:3000/api/v1/sessions", {
+      const response = await fetch(`${webserver.origin}/api/v1/sessions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -105,7 +106,7 @@ describe("POST /api/v1/sessions", () => {
 
       await orchestrator.activateUser(userTest);
 
-      const response = await fetch("http://localhost:3000/api/v1/sessions", {
+      const response = await fetch(`${webserver.origin}/api/v1/sessions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -154,6 +155,7 @@ describe("POST /api/v1/sessions", () => {
         path: "/",
         maxAge: session.EXPIRATION_IN_MILLISECONDS / 1000,
         httpOnly: true,
+        sameSite: "Lax",
       });
     });
   });
